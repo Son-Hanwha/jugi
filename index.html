@@ -1,0 +1,172 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>생리 주기 예측 (DB 미사용)</title>
+  <style>
+    :root {
+      --bg: #f8f6f2;
+      --card: #fffdf9;
+      --ink: #1f2937;
+      --accent: #d97706;
+      --line: #e5e7eb;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Pretendard", "Noto Sans KR", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 10% 20%, #fff7ed 0%, transparent 35%),
+        radial-gradient(circle at 90% 10%, #fef3c7 0%, transparent 30%),
+        var(--bg);
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(760px, 100%);
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(1.3rem, 3vw, 1.8rem);
+    }
+
+    .meta {
+      margin: 0 0 16px;
+      color: #4b5563;
+      font-size: 0.95rem;
+    }
+
+    .list {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 12px;
+    }
+
+    .item {
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 14px;
+      background: #ffffff;
+    }
+
+    .label {
+      font-weight: 700;
+      color: var(--accent);
+      margin-bottom: 6px;
+    }
+
+    .line {
+      font-size: 0.98rem;
+      line-height: 1.5;
+    }
+
+    .note {
+      margin-top: 14px;
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>생리 주기 예측</h1>
+    <p class="meta" id="configText"></p>
+    <ul class="list" id="resultList"></ul>
+    <p class="note">DB/로컬스토리지/쿠키 저장 없이 화면에만 표시됩니다.</p>
+  </main>
+
+  <script>
+    // 하드코딩 컨피그 (필요 시 여기만 수정)
+    const CYCLE_DAYS_FROM_END = 24;
+    const PERIOD_DAYS = 7;
+    const FIRST_START_DATE = "2026.08.12";
+
+    const LABELS = ["처음월", "다음월", "다다음월"];
+    const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
+
+    function parseDotDate(str) {
+      const [y, m, d] = str.split(".").map(Number);
+      return new Date(y, m - 1, d);
+    }
+
+    function addDays(dt, days) {
+      const next = new Date(dt);
+      next.setDate(next.getDate() + days);
+      return next;
+    }
+
+    function formatMmDdWithWeekday(dt) {
+      const mm = String(dt.getMonth() + 1).padStart(2, "0");
+      const dd = String(dt.getDate()).padStart(2, "0");
+      return `${mm}.${dd}(${WEEKDAYS[dt.getDay()]})`;
+    }
+
+    function buildPredictions() {
+      const starts = [parseDotDate(FIRST_START_DATE)];
+
+      for (let i = 0; i < 3; i += 1) {
+        const currentStart = starts[starts.length - 1];
+        const currentEnd = addDays(currentStart, PERIOD_DAYS - 1);
+        const nextStart = addDays(currentEnd, CYCLE_DAYS_FROM_END);
+        starts.push(nextStart);
+      }
+
+      return LABELS.map((label, idx) => {
+        const periodStart = starts[idx];
+        const periodEnd = addDays(periodStart, PERIOD_DAYS - 1);
+        const nextPeriodStart = starts[idx + 1];
+
+        const ovulationDay = addDays(nextPeriodStart, -14);
+        const fertileStart = addDays(ovulationDay, -5);
+        const fertileEnd = ovulationDay;
+
+        return {
+          label,
+          periodStart,
+          periodEnd,
+          fertileStart,
+          fertileEnd,
+        };
+      });
+    }
+
+    function render() {
+      const configText = document.getElementById("configText");
+      const resultList = document.getElementById("resultList");
+
+      configText.textContent = `주기(끝난 날 기준): +${CYCLE_DAYS_FROM_END}일 | 기간: ${PERIOD_DAYS}일 | 시작일: ${FIRST_START_DATE}`;
+
+      const predictions = buildPredictions();
+      resultList.innerHTML = "";
+
+      for (const p of predictions) {
+        const li = document.createElement("li");
+        li.className = "item";
+        li.innerHTML = `
+          <div class="label">${p.label}</div>
+          <div class="line">예상일: ${formatMmDdWithWeekday(p.periodStart)} ~ ${formatMmDdWithWeekday(p.periodEnd)}</div>
+          <div class="line">가임기간: ${formatMmDdWithWeekday(p.fertileStart)} ~ ${formatMmDdWithWeekday(p.fertileEnd)}</div>
+        `;
+        resultList.appendChild(li);
+      }
+    }
+
+    render();
+  </script>
+</body>
+</html>
