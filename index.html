@@ -1,172 +1,660 @@
 <!doctype html>
-<html lang="ko">
+<html lang="ja">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>생리 주기 예측 (DB 미사용)</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>韓国現地ビジネス秘書・コーディネーター</title>
+  <meta name="description" content="韓国旅行・出張を1日単位でサポート。空港送迎、移動、食事、ゴルフ、ビジネス同行まで日本語で対応。" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #f8f6f2;
-      --card: #fffdf9;
-      --ink: #1f2937;
-      --accent: #d97706;
-      --line: #e5e7eb;
+      --bg: #f6f8f3;
+      --paper: #ffffff;
+      --ink: #1f2522;
+      --sub: #5a655e;
+      --line: #d7e1da;
+      --brand: #0f766e;
+      --brand-dark: #115e59;
+      --point: #fb923c;
+      --hero: linear-gradient(135deg, #eafaf1 0%, #f1f7ff 50%, #fff5e9 100%);
+      --radius-lg: 16px;
+      --radius-xl: 24px;
+      --shadow: 0 14px 36px rgba(13, 45, 38, 0.1);
+      --max: 1120px;
     }
 
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: "Pretendard", "Noto Sans KR", sans-serif;
       color: var(--ink);
-      background:
-        radial-gradient(circle at 10% 20%, #fff7ed 0%, transparent 35%),
-        radial-gradient(circle at 90% 10%, #fef3c7 0%, transparent 30%),
-        var(--bg);
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      padding: 24px;
+      background: var(--bg);
+      font-family: "Noto Sans JP", "Noto Sans KR", sans-serif;
+      line-height: 1.75;
     }
 
-    .card {
-      width: min(760px, 100%);
-      background: var(--card);
-      border: 1px solid var(--line);
-      border-radius: 20px;
-      padding: 24px;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.08);
+    body.lang-ko {
+      font-family: "Noto Sans KR", "Noto Sans JP", sans-serif;
     }
 
-    h1 {
-      margin: 0 0 8px;
-      font-size: clamp(1.3rem, 3vw, 1.8rem);
+    .wrap {
+      width: min(calc(100% - 2rem), var(--max));
+      margin: 0 auto;
     }
 
-    .meta {
-      margin: 0 0 16px;
-      color: #4b5563;
-      font-size: 0.95rem;
+    .topbar {
+      position: sticky;
+      top: 0;
+      z-index: 30;
+      backdrop-filter: blur(9px);
+      background: rgba(246, 248, 243, 0.86);
+      border-bottom: 1px solid #dfe7e1;
     }
 
-    .list {
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      display: grid;
+    .topbar-inner {
+      min-height: 68px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
       gap: 12px;
     }
 
-    .item {
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-family: "Outfit", "Noto Sans JP", sans-serif;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      background: linear-gradient(140deg, var(--brand), var(--point));
+      box-shadow: 0 0 0 7px rgba(15, 118, 110, 0.12);
+    }
+
+    .lang-switch {
+      display: inline-flex;
+      background: #fff;
       border: 1px solid var(--line);
-      border-radius: 14px;
-      padding: 14px;
-      background: #ffffff;
+      border-radius: 999px;
+      padding: 4px;
+      gap: 4px;
     }
 
-    .label {
+    .lang-btn {
+      border: 0;
+      background: transparent;
+      color: var(--sub);
+      border-radius: 999px;
+      padding: 8px 14px;
       font-weight: 700;
-      color: var(--accent);
-      margin-bottom: 6px;
+      cursor: pointer;
     }
 
-    .line {
-      font-size: 0.98rem;
-      line-height: 1.5;
+    .lang-btn.active {
+      background: linear-gradient(135deg, var(--brand), var(--brand-dark));
+      color: #fff;
+      box-shadow: 0 8px 16px rgba(17, 94, 89, 0.24);
     }
 
-    .note {
-      margin-top: 14px;
-      font-size: 0.85rem;
-      color: #6b7280;
+    [data-lang] { display: none; }
+    body.lang-ja [data-lang="ja"],
+    body.lang-ko [data-lang="ko"] { display: block; }
+    body.lang-ja [data-lang="ja"][data-display="inline"],
+    body.lang-ko [data-lang="ko"][data-display="inline"] { display: inline; }
+
+    body.lang-ja .pill[data-lang="ko"],
+    body.lang-ko .pill[data-lang="ja"] { display: none; }
+
+    body.lang-ja .pill[data-lang="ja"],
+    body.lang-ko .pill[data-lang="ko"] { display: inline-flex; }
+
+    .hero {
+      background: var(--hero);
+      padding: 70px 0 56px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::before,
+    .hero::after {
+      content: "";
+      position: absolute;
+      border-radius: 999px;
+      z-index: 0;
+      opacity: 0.6;
+    }
+
+    .hero::before {
+      width: 300px;
+      height: 300px;
+      right: -80px;
+      top: -90px;
+      background: radial-gradient(circle at 40% 40%, #99f6e4, #34d399);
+    }
+
+    .hero::after {
+      width: 260px;
+      height: 260px;
+      left: -90px;
+      bottom: -100px;
+      background: radial-gradient(circle at 40% 40%, #fed7aa, #fb923c);
+    }
+
+    .hero-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .pill {
+      display: inline-flex;
+      border-radius: 999px;
+      border: 1px solid #9be9cb;
+      background: #ecfdf5;
+      color: #065f46;
+      padding: 8px 13px;
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    h1 {
+      margin: 14px 0 10px;
+      font-size: clamp(2rem, 4vw, 3.2rem);
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      font-family: "Outfit", "Noto Sans JP", sans-serif;
+    }
+
+    .lead {
+      margin: 0;
+      color: #3f4b45;
+      font-size: clamp(1rem, 1.7vw, 1.14rem);
+      max-width: 640px;
+    }
+
+    .hero-card {
+      background: #ffffffd8;
+      border: 1px solid #ffffff;
+      border-radius: var(--radius-xl);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-card img {
+      width: 100%;
+      height: 286px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .hero-card p {
+      margin: 0;
+      padding: 14px 16px;
+      color: #35413c;
+      font-size: 0.95rem;
+    }
+
+    section {
+      padding: 34px 0;
+    }
+
+    .block {
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      box-shadow: 0 8px 24px rgba(8, 32, 26, 0.07);
+    }
+
+    h2 {
+      margin: 0 0 10px;
+      font-size: clamp(1.35rem, 2.2vw, 1.9rem);
+      letter-spacing: -0.02em;
+    }
+
+    h3 {
+      margin: 18px 0 8px;
+      font-size: 1.08rem;
+    }
+
+    p { margin: 8px 0; }
+    ul { margin: 8px 0 0; padding-left: 20px; }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .image-card {
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      box-shadow: 0 10px 24px rgba(8, 30, 25, 0.09);
+    }
+
+    .image-card img {
+      width: 100%;
+      height: 100%;
+      min-height: 300px;
+      object-fit: cover;
+      display: block;
+    }
+
+    .price {
+      background: linear-gradient(140deg, #0f766e, #155e75);
+      color: #fff;
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 16px 30px rgba(7, 51, 62, 0.3);
+    }
+
+    .amount {
+      font-family: "Outfit", "Noto Sans JP", sans-serif;
+      font-size: clamp(1.8rem, 4.1vw, 2.9rem);
+      letter-spacing: -0.03em;
+      font-weight: 800;
+      margin: 6px 0;
+    }
+
+    .contact {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 16px;
+      padding: 20px;
+    }
+
+    footer {
+      border-top: 1px solid var(--line);
+      color: #67726d;
+      font-size: 0.92rem;
+      padding: 24px 0 34px;
+    }
+
+    @media (max-width: 920px) {
+      .hero-grid,
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .hero {
+        padding-top: 58px;
+      }
+
+      .hero-card img {
+        height: 240px;
+      }
     }
   </style>
 </head>
-<body>
-  <main class="card">
-    <h1>생리 주기 예측</h1>
-    <p class="meta" id="configText"></p>
-    <ul class="list" id="resultList"></ul>
-    <p class="note">DB/로컬스토리지/쿠키 저장 없이 화면에만 표시됩니다.</p>
+<body class="lang-ja">
+  <header class="topbar">
+    <div class="wrap topbar-inner">
+      <div class="brand">
+        <span class="dot" aria-hidden="true"></span>
+        <span data-lang="ja" data-display="inline">韓国現地アテンド</span>
+        <span data-lang="ko" data-display="inline">한국 현지 어텐드</span>
+      </div>
+      <div class="lang-switch">
+        <button id="btn-ja" class="lang-btn active" type="button">日本語</button>
+        <button id="btn-ko" class="lang-btn" type="button">한국어</button>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="pill" data-lang="ja">🇯🇵 1日単位で雇える</span>
+        <span class="pill" data-lang="ko">🇰🇷 하루 단위 이용 가능</span>
+
+        <h1 data-lang="ja">韓国で、ちょっと誰かに頼りたい。</h1>
+        <h1 data-lang="ko">한국에서, 잠깐 누군가에게 기대고 싶을 때.</h1>
+
+        <p class="lead" data-lang="ja">韓国旅行・出張の「ちょっと困った」をお手伝いします。</p>
+        <p class="lead" data-lang="ko">한국 여행·출장 중 생기는 작은 불편을 함께 해결해드립니다.</p>
+      </div>
+
+      <aside class="hero-card">
+        <img src="https://images.pexels.com/photos/3184465/pexels-photo-3184465.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="Business support" loading="lazy" />
+        <p data-lang="ja">「韓国に知り合いが一人いたらいいのに」と思う瞬間に、1日単位で頼れる現地サポート。</p>
+        <p data-lang="ko">“한국에 아는 사람이 한 명 있었으면…” 하는 순간에, 하루 단위로 의지할 수 있는 현지 지원.</p>
+      </aside>
+    </div>
+  </section>
+
+  <main class="wrap">
+    <section class="block">
+      <h2 data-lang="ja">🇰🇷 韓国で、あなたの「現地の人」になります。</h2>
+      <h2 data-lang="ko">🇰🇷 한국에서, 당신의 현지인이 되어드립니다.</h2>
+
+      <div data-lang="ja">
+        <p>私は韓国人ですが、日本で約8年間生活していました。</p>
+        <p>日本語で普通に会話ができるので、</p>
+        <p><strong>「通訳を頼むほどではないけど、韓国語ができる人がいてほしい」</strong></p>
+        <p>という場面にも気軽に対応できます。</p>
+        <p>旅行でも、ゴルフでも、食事でも、ちょっとした仕事でも。</p>
+        <p>必要な時だけ、1日一緒に動きます。</p>
+      </div>
+
+      <div data-lang="ko">
+        <p>저는 한국인이며, 일본에서 약 8년간 생활했습니다.</p>
+        <p>일본어로 자연스럽게 소통할 수 있어,</p>
+        <p><strong>“전문 통역까지는 아니지만 한국어 가능한 사람이 필요하다”</strong></p>
+        <p>는 상황에 편하게 대응할 수 있습니다.</p>
+        <p>여행, 골프, 식사, 가벼운 업무까지.</p>
+        <p>필요한 날에만, 하루 단위로 함께 움직입니다.</p>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <article class="block">
+        <h2 data-lang="ja">こんなことをお手伝いします</h2>
+        <h2 data-lang="ko">이런 일을 도와드립니다</h2>
+
+        <div data-lang="ja">
+          <h3>✈️ 空港・移動</h3>
+          <ul>
+            <li>仁川空港・金浦空港へのお迎え</li>
+            <li>空港からホテルまでの移動</li>
+            <li>韓国内での車移動</li>
+            <li>行きたい場所への同行</li>
+          </ul>
+
+          <h3>🍚 食事・ショッピング</h3>
+          <ul>
+            <li>レストラン探し・予約</li>
+            <li>お店での韓国語サポート</li>
+            <li>ショッピング同行</li>
+            <li>韓国のお店・サービスについての簡単な案内</li>
+          </ul>
+
+          <h3>⛳ ゴルフ</h3>
+          <ul>
+            <li>韓国ゴルフ場の予約サポート</li>
+            <li>ゴルフ場への同行</li>
+            <li>現地でのコミュニケーション</li>
+            <li>ゴルフ後の食事・移動などのアテンド</li>
+          </ul>
+
+          <h3>💼 ちょっとしたビジネス</h3>
+          <ul>
+            <li>韓国企業への訪問同行</li>
+            <li>簡単な日韓通訳</li>
+            <li>現地での打ち合わせサポート</li>
+            <li>韓国企業・サービスについての簡単な情報収集</li>
+            <li>名刺交換や会話のサポート</li>
+          </ul>
+
+          <h3>🏙️ 韓国での1日アテンド</h3>
+          <p>「ここに行きたい」</p>
+          <p>「これを食べたい」</p>
+          <p>「この店を予約してほしい」</p>
+          <p>「韓国でこれをやってみたい」</p>
+          <p>など、決まったプランがなくても大丈夫です。</p>
+          <p>一緒に予定を考えながら、韓国で1日ご案内します。</p>
+        </div>
+
+        <div data-lang="ko">
+          <h3>✈️ 공항·이동</h3>
+          <ul>
+            <li>인천공항·김포공항 픽업</li>
+            <li>공항-호텔 이동</li>
+            <li>한국 내 차량 이동</li>
+            <li>원하는 장소 동행</li>
+          </ul>
+
+          <h3>🍚 식사·쇼핑</h3>
+          <ul>
+            <li>식당 탐색·예약</li>
+            <li>매장 내 한국어 소통 지원</li>
+            <li>쇼핑 동행</li>
+            <li>한국 매장·서비스 간단 안내</li>
+          </ul>
+
+          <h3>⛳ 골프</h3>
+          <ul>
+            <li>한국 골프장 예약 지원</li>
+            <li>골프장 동행</li>
+            <li>현지 커뮤니케이션 지원</li>
+            <li>골프 후 식사·이동 어텐드</li>
+          </ul>
+
+          <h3>💼 가벼운 비즈니스</h3>
+          <ul>
+            <li>한국 기업 방문 동행</li>
+            <li>간단한 일한 통역</li>
+            <li>현지 미팅 지원</li>
+            <li>기업·서비스 기초 정보 수집</li>
+            <li>명함 교환·대화 보조</li>
+          </ul>
+
+          <h3>🏙️ 한국 1일 어텐드</h3>
+          <p>“여기에 가고 싶어요”</p>
+          <p>“이걸 먹고 싶어요”</p>
+          <p>“이 가게 예약해 주세요”</p>
+          <p>“한국에서 이걸 해보고 싶어요”</p>
+          <p>처럼 아직 플랜이 정해지지 않아도 괜찮습니다.</p>
+          <p>함께 일정을 짜며 한국에서 하루를 안내해드립니다.</p>
+        </div>
+      </article>
+
+      <aside class="image-card">
+        <img src="https://images.pexels.com/photos/1546168/pexels-photo-1546168.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="Seoul city" loading="lazy" />
+      </aside>
+    </section>
+
+    <section class="block">
+      <h2 data-lang="ja">💡 通訳サービスとは少し違います。</h2>
+      <h2 data-lang="ko">💡 일반 통역 서비스와는 조금 다릅니다.</h2>
+
+      <div data-lang="ja">
+        <p>難しい専門用語を使う通訳サービスではありません。</p>
+        <p>もっと気軽に、</p>
+        <p><strong>「韓国にいる日本語が話せる知り合い」</strong></p>
+        <p>くらいに考えてください。</p>
+        <p>必要な時に聞いて、必要な時に一緒に行って、必要な時だけ手伝います。</p>
+        <p>もちろん、ビジネスの場面では、日本と韓国の文化や仕事の進め方の違いも考えながらサポートします。</p>
+      </div>
+
+      <div data-lang="ko">
+        <p>어려운 전문용어 중심의 통역 서비스가 아닙니다.</p>
+        <p>조금 더 편하게,</p>
+        <p><strong>“한국에 있는 일본어 가능한 지인”</strong></p>
+        <p>처럼 생각해 주세요.</p>
+        <p>필요할 때 묻고, 필요할 때 함께 가고, 필요할 때만 도와드립니다.</p>
+        <p>비즈니스 장면에서는 한일 문화와 업무 방식의 차이까지 고려해 지원합니다.</p>
+      </div>
+    </section>
+
+    <section class="grid-2">
+      <article class="block">
+        <h2 data-lang="ja">👤 こんな人が対応します</h2>
+        <h2 data-lang="ko">👤 이런 사람이 대응합니다</h2>
+
+        <div data-lang="ja">
+          <p><strong>韓国人 / 男性 / 45歳</strong></p>
+          <ul>
+            <li>日本在住経験: 約8年</li>
+            <li>日本語: ビジネスレベル</li>
+            <li>韓国大手企業勤務</li>
+            <li>IT・ビジネス分野での実務経験</li>
+            <li>日本語IT技術書の翻訳・出版経験あり</li>
+          </ul>
+          <p>日本語のIT技術書 <strong>『Vue 3 フロントエンド開発の教科書』</strong> の翻訳・出版にも携わりました。</p>
+          <p>ただし、難しいコンサルティングサービスを提供するつもりはありません。</p>
+          <p><strong>韓国に来た日本人の方が、安心して楽しく過ごせるようにお手伝いすること。</strong></p>
+          <p>それが、このサービスの目的です。</p>
+        </div>
+
+        <div data-lang="ko">
+          <p><strong>한국인 / 남성 / 45세</strong></p>
+          <ul>
+            <li>일본 거주 경험: 약 8년</li>
+            <li>일본어: 비즈니스 레벨</li>
+            <li>한국 대기업 재직</li>
+            <li>IT·비즈니스 실무 경험</li>
+            <li>일본어 IT 기술서 번역·출판 경험</li>
+          </ul>
+          <p>일본어 IT 기술서 <strong>『Vue 3 フロントエンド開発の教科書』</strong> 번역·출판에 참여했습니다.</p>
+          <p>다만 고난도 컨설팅을 제공하려는 서비스는 아닙니다.</p>
+          <p><strong>한국을 찾은 일본인 분들이 안심하고 즐겁게 머물도록 돕는 것.</strong></p>
+          <p>그것이 이 서비스의 목적입니다.</p>
+        </div>
+      </article>
+
+      <aside class="image-card">
+        <img src="https://images.pexels.com/photos/31413664/pexels-photo-31413664.png" alt="Profile" loading="lazy" />
+      </aside>
+    </section>
+
+    <section class="price">
+      <h2 data-lang="ja" style="margin-top:0;">💰 料金</h2>
+      <h2 data-lang="ko" style="margin-top:0;">💰 요금</h2>
+      <div class="amount" data-lang="ja">1 DAY 30,000円</div>
+      <div class="amount" data-lang="ko">1 DAY 30,000엔</div>
+      <p data-lang="ja"><strong>約8時間</strong></p>
+      <p data-lang="ko"><strong>약 8시간</strong></p>
+      <p data-lang="ja">空港のお迎えから、移動、食事、観光、ゴルフ、ちょっとしたビジネスまで。その日の予定に合わせて柔軟に対応します。</p>
+      <p data-lang="ko">공항 픽업부터 이동, 식사, 관광, 골프, 가벼운 비즈니스까지. 당일 일정에 맞춰 유연하게 대응합니다.</p>
+
+      <h3 data-lang="ja">基本料金に含まれるもの</h3>
+      <h3 data-lang="ko">기본 요금 포함 항목</h3>
+      <ul data-lang="ja">
+        <li>空港ピックアップ</li>
+        <li>車での移動サポート（4人乗り乗用車）</li>
+        <li>レストラン等の予約サポート</li>
+        <li>現地アテンド</li>
+        <li>日韓コミュニケーションサポート</li>
+        <li>簡単な通訳</li>
+      </ul>
+      <ul data-lang="ko">
+        <li>공항 픽업</li>
+        <li>차량 이동 지원 (4인승 승용차)</li>
+        <li>식당 등 예약 지원</li>
+        <li>현지 어텐드</li>
+        <li>일한 커뮤니케이션 지원</li>
+        <li>간단 통역</li>
+      </ul>
+
+      <p data-lang="ja">※ 食事代等の実費は別途となります。</p>
+      <p data-lang="ja">※ 8時間を超える場合は事前にご相談ください。</p>
+      <p data-lang="ko">※ 식비등 실비는 별도입니다.</p>
+      <p data-lang="ko">※ 8시간 초과 시 사전 협의가 필요합니다.</p>
+    </section>
+
+    <section class="block">
+      <h2 data-lang="ja">📅 ご利用可能日</h2>
+      <h2 data-lang="ko">📅 이용 가능일</h2>
+      <p data-lang="ja">現在、本業と並行して個人で対応しています。</p>
+      <p data-lang="ja">そのため、<strong>土曜日・日曜日・韓国の祝日</strong>を中心にご案内しています。</p>
+      <p data-lang="ja">平日についても、予定が合えば対応可能です。まずはお気軽にお問い合わせください。</p>
+
+      <p data-lang="ko">현재 본업과 병행하여 개인 일정으로 대응하고 있습니다.</p>
+      <p data-lang="ko">그래서 <strong>토요일·일요일·한국 공휴일</strong> 중심으로 안내드립니다.</p>
+      <p data-lang="ko">평일도 일정이 맞으면 가능합니다. 먼저 편하게 문의해 주세요.</p>
+    </section>
+
+    <section class="block">
+      <h2 data-lang="ja">🙋‍♂️ 「こんなこと頼める？」でも大丈夫です。</h2>
+      <h2 data-lang="ko">🙋‍♂️ “이런 것도 부탁 가능할까요?”도 괜찮습니다.</h2>
+
+      <div data-lang="ja">
+        <p>例えば、</p>
+        <p>「韓国で家族と一緒に旅行したい」</p>
+        <p>「韓国の有名観光地ではない場所でゆっくり過ごしてみたい」</p>
+        <p>「韓国でゴルフをしたい」</p>
+        <p>「おすすめの店に連れて行ってほしい」</p>
+        <p>「韓国の会社を見てみたい」</p>
+        <p>「取引先との打ち合わせに同行してほしい」</p>
+        <p>「空港から1日案内してほしい」</p>
+        <p>「韓国語が必要な時だけ助けてほしい」</p>
+        <p>など。</p>
+        <p><strong>まだ予定が決まっていなくても大丈夫です。</strong></p>
+        <p>やりたいことを簡単にメッセージしてください。できる範囲で、一緒に考えます。</p>
+      </div>
+
+      <div data-lang="ko">
+        <p>예를 들면,</p>
+        <p>“한국에서 가족과 함께 여행하고 싶어요”</p>
+        <p>“한국의 관광지가 아닌 곳에서 보내 보고 싶어요”</p>
+        <p>“한국에서 골프 치고 싶어요”</p>
+        <p>“추천 맛집에 데려다 주세요”</p>
+        <p>“한국 회사를 한 번 보고 싶어요”</p>
+        <p>“거래처 미팅에 동행해 주세요”</p>
+        <p>“공항부터 하루 안내해 주세요”</p>
+        <p>“한국어가 필요한 순간만 도와주세요”</p>
+        <p>같은 요청도 가능합니다.</p>
+        <p><strong>아직 일정이 확정되지 않아도 괜찮습니다.</strong></p>
+        <p>하고 싶은 일을 간단히 남겨주세요. 가능한 범위에서 함께 계획해드립니다.</p>
+      </div>
+    </section>
+
+    <section class="contact" id="contact" style="margin-bottom:34px;">
+      <h2 data-lang="ja">🇰🇷 韓国に、ちょっと頼れる人を。</h2>
+      <h2 data-lang="ko">🇰🇷 한국에, 조금 기대도 되는 사람을.</h2>
+
+      <p data-lang="ja">旅行でも。ゴルフでも。食事でも。仕事でも。</p>
+      <p data-lang="ja">韓国で一人では少し不安な時に。<strong>「ちょっとお願い」</strong>くらいの感覚でご利用ください。</p>
+      <p data-lang="ja">あなたの韓国滞在が、少し楽しく、少し便利になるようにお手伝いします。</p>
+
+      <p data-lang="ko">여행이든, 골프든, 식사든, 일이든.</p>
+      <p data-lang="ko">한국에서 혼자라 조금 불안할 때, <strong>“잠깐만 부탁해요”</strong>라는 느낌으로 이용해 주세요.</p>
+      <p data-lang="ko">당신의 한국 체류가 조금 더 즐겁고 편리해지도록 도와드립니다.</p>
+
+      <h3 data-lang="ja">📩 お問い合わせ</h3>
+      <h3 data-lang="ko">📩 문의</h3>
+
+      <p>Email: <a href="mailto:son.honyaku@gmail.com">son.honyaku@gmail.com</a></p>
+      <p data-lang="ja"><strong>LINE</strong> ※ LINE ID : sonjobs</p>
+      <p data-lang="ko"><strong>LINE</strong> ※ LINE ID : sonjobs</p>
+
+      <p data-lang="ja">まずは、<strong>「韓国で○○したい」</strong>と簡単にメッセージしてください。お気軽にどうぞ。</p>
+      <p data-lang="ko">먼저 <strong>“한국에서 ○○하고 싶어요”</strong>라고 간단히 메시지 주세요. 편하게 문의하셔도 됩니다.</p>
+    </section>
   </main>
 
+  <footer>
+    <div class="wrap">
+      <div data-lang="ja">© 韓国現地ビジネス秘書・コーディネーター</div>
+      <div data-lang="ko">© 한국 현지 비즈니스 비서·코디네이터</div>
+      <div data-lang="ja">画像は Google 検索キーワード「Seoul business / Korea travel / Korean golf」の文脈で使いやすい素材を配置しています。</div>
+      <div data-lang="ko">이미지는 Google 검색 키워드 “Seoul business / Korea travel / Korean golf” 맥락에서 활용하기 쉬운 소스를 배치했습니다.</div>
+    </div>
+  </footer>
+
   <script>
-    // 하드코딩 컨피그 (필요 시 여기만 수정)
-    const CYCLE_DAYS_FROM_END = 24;
-    const PERIOD_DAYS = 7;
-    const FIRST_START_DATE = "2026.08.12";
+    (function () {
+      const body = document.body;
+      const btnJa = document.getElementById("btn-ja");
+      const btnKo = document.getElementById("btn-ko");
 
-    const LABELS = ["처음월", "다음월", "다다음월"];
-    const WEEKDAYS = ["일", "월", "화", "수", "목", "금", "토"];
-
-    function parseDotDate(str) {
-      const [y, m, d] = str.split(".").map(Number);
-      return new Date(y, m - 1, d);
-    }
-
-    function addDays(dt, days) {
-      const next = new Date(dt);
-      next.setDate(next.getDate() + days);
-      return next;
-    }
-
-    function formatMmDdWithWeekday(dt) {
-      const mm = String(dt.getMonth() + 1).padStart(2, "0");
-      const dd = String(dt.getDate()).padStart(2, "0");
-      return `${mm}.${dd}(${WEEKDAYS[dt.getDay()]})`;
-    }
-
-    function buildPredictions() {
-      const starts = [parseDotDate(FIRST_START_DATE)];
-
-      for (let i = 0; i < 3; i += 1) {
-        const currentStart = starts[starts.length - 1];
-        const currentEnd = addDays(currentStart, PERIOD_DAYS - 1);
-        const nextStart = addDays(currentEnd, CYCLE_DAYS_FROM_END);
-        starts.push(nextStart);
+      function setLang(lang) {
+        if (lang !== "ja" && lang !== "ko") return;
+        body.classList.remove("lang-ja", "lang-ko");
+        body.classList.add("lang-" + lang);
+        document.documentElement.lang = lang;
+        btnJa.classList.toggle("active", lang === "ja");
+        btnKo.classList.toggle("active", lang === "ko");
+        localStorage.setItem("landing-lang", lang);
       }
 
-      return LABELS.map((label, idx) => {
-        const periodStart = starts[idx];
-        const periodEnd = addDays(periodStart, PERIOD_DAYS - 1);
-        const nextPeriodStart = starts[idx + 1];
+      btnJa.addEventListener("click", function () { setLang("ja"); });
+      btnKo.addEventListener("click", function () { setLang("ko"); });
 
-        const ovulationDay = addDays(nextPeriodStart, -14);
-        const fertileStart = addDays(ovulationDay, -5);
-        const fertileEnd = ovulationDay;
-
-        return {
-          label,
-          periodStart,
-          periodEnd,
-          fertileStart,
-          fertileEnd,
-        };
-      });
-    }
-
-    function render() {
-      const configText = document.getElementById("configText");
-      const resultList = document.getElementById("resultList");
-
-      configText.textContent = `주기(끝난 날 기준): +${CYCLE_DAYS_FROM_END}일 | 기간: ${PERIOD_DAYS}일 | 시작일: ${FIRST_START_DATE}`;
-
-      const predictions = buildPredictions();
-      resultList.innerHTML = "";
-
-      for (const p of predictions) {
-        const li = document.createElement("li");
-        li.className = "item";
-        li.innerHTML = `
-          <div class="label">${p.label}</div>
-          <div class="line">예상일: ${formatMmDdWithWeekday(p.periodStart)} ~ ${formatMmDdWithWeekday(p.periodEnd)}</div>
-          <div class="line">가임기간: ${formatMmDdWithWeekday(p.fertileStart)} ~ ${formatMmDdWithWeekday(p.fertileEnd)}</div>
-        `;
-        resultList.appendChild(li);
-      }
-    }
-
-    render();
+      const saved = localStorage.getItem("landing-lang");
+      setLang(saved === "ko" ? "ko" : "ja");
+    })();
   </script>
 </body>
 </html>
